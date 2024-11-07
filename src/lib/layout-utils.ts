@@ -6,7 +6,7 @@ export function calcManipulationAreaLpx(canvasSizeLpx: Size, chartSettings: Char
         x: chartSettings.legend.y.width,
         y: chartSettings.topGap,
         width: canvasSizeLpx.width - chartSettings.legend.y.width,
-        height: canvasSizeLpx.height - chartSettings.topGap,
+        height: canvasSizeLpx.height - chartSettings.topGap - chartSettings.legend.x.height,
     };
 }
 

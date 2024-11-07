@@ -219,6 +219,8 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
         [],
     );
 
+    const is_development_mode = process.env.NODE_ENV === 'development'
+
     return (
         <div className={props.className} style={{ position: "relative", height: "350px", ...props.style }}>
             <canvas ref={setCanvas} style={{ width: "100%", height: "100%" }} />
@@ -236,7 +238,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
             />
             <ChartContext.Provider value={chartContextValue}>{props.children}</ChartContext.Provider>
 
-            {fps !== 0 ? (
+            {is_development_mode && fps !== 0 ? (
                 <div
                     style={{
                         position: "absolute",
