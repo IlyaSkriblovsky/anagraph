@@ -18,6 +18,7 @@ const wheelZoomFactor = 1.5;
 
 interface DragAndZoomOptions {
     boundsLimit?: Bounds;
+    boundsMinVisibleX?: number;
 }
 
 export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bounds {
@@ -34,6 +35,12 @@ export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bou
     }
 
     return bounds;
+}
+
+export function checkBoundsInMinVisibleX (bounds: Bounds, minVisibleX: number = 1): boolean {
+    const boundsDiff = Math.abs(bounds[0] - bounds[1])
+
+    return boundsDiff >= minVisibleX;
 }
 
 /** @function useDragAndZoom
@@ -119,7 +126,13 @@ export function useDragAndZoom(
                     const k = (prev1 - prev2) / (new1 - new2);
                     const b = prev1 - k * new1;
 
-                    temporaryViewport = [k * temporaryViewport[0] + b, k * temporaryViewport[1] + b];
+                    const newViewport: Bounds = [k * temporaryViewport[0] + b, k * temporaryViewport[1] + b]
+
+                    if (!checkBoundsInMinVisibleX(newViewport, options.boundsMinVisibleX)) {
+                        return;
+                    }
+
+                    temporaryViewport = newViewport;
                 }
             }
 
@@ -226,8 +239,14 @@ export function useDragAndZoom(
 
             const factor = Math.pow(wheelZoomFactor, event.deltaY / 53);
 
+            const newViewPort: Bounds = [x - (x - temporaryViewport[0]) * factor, x + (temporaryViewport[1] - x) * factor]
+
+            if (!checkBoundsInMinVisibleX(newViewPort, options.boundsMinVisibleX)) {
+                return;
+            }
+
             temporaryViewport = fitBoundsInLimit(
-                [x - (x - temporaryViewport[0]) * factor, x + (temporaryViewport[1] - x) * factor],
+                newViewPort,
                 options.boundsLimit,
             );
 

@@ -51,6 +51,7 @@ export interface ChartSettings {
         eachHeight: number;
         gap: number;
     };
+    boundsMinVisibleX?: number;
 }
 
 export const defaultChartSettings: ChartSettings = {
