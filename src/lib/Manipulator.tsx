@@ -7,18 +7,17 @@ interface ManipulatorProps {
     onHover?: (x: number, event: PointerEvent) => void;
     onHoverEnd?: () => void;
     onTouchUp?: (x: number, event: PointerEvent) => void;
-    boundsMinVisibleX?: number;
 }
 
 export function Manipulator(props: ManipulatorProps) {
-    const { onHover, onHoverEnd, onTouchUp, boundsMinVisibleX } = props;
-    const { xBoundsLimit, settledXBounds, onManipulation, onManipulationEnd } = useBoundsContext();
+    const { onHover, onHoverEnd, onTouchUp } = props;
+    const { xBoundsLimit, xBoundsMinVisible, settledXBounds, onManipulation, onManipulationEnd } = useBoundsContext();
 
     const [glass, setGlass] = useState<HTMLDivElement | null>(null);
 
     useDragAndZoom(glass, settledXBounds, onManipulation, onManipulationEnd, onHover, onHoverEnd, onTouchUp, {
         boundsLimit: xBoundsLimit,
-        boundsMinVisibleX: boundsMinVisibleX,
+        xMinVisible: xBoundsMinVisible,
     });
 
     return (

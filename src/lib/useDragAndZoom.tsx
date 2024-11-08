@@ -18,7 +18,7 @@ const wheelZoomFactor = 1.5;
 
 interface DragAndZoomOptions {
     boundsLimit?: Bounds;
-    boundsMinVisibleX?: number;
+    xMinVisible?: number;
 }
 
 export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bounds {
@@ -37,10 +37,20 @@ export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bou
     return bounds;
 }
 
-export function checkBoundsInMinVisibleX (bounds: Bounds, minVisibleX: number = 1): boolean {
-    const boundsDiff = Math.abs(bounds[0] - bounds[1])
+export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, minVisibleX: number = 1): Bounds {
+    if (newBounds[1] - newBounds[0] > minVisibleX) {
+        return newBounds;
+    }
 
-    return boundsDiff >= minVisibleX;
+    const lenBounds = oldBounds[1] - oldBounds[0];
+
+    if (lenBounds <= minVisibleX) {
+        return oldBounds
+    }
+
+    const lenVisibleDiff = Math.abs(minVisibleX - lenBounds);
+
+    return [oldBounds[0] + lenVisibleDiff / 2, oldBounds[1] - lenVisibleDiff / 2]
 }
 
 /** @function useDragAndZoom
@@ -128,11 +138,9 @@ export function useDragAndZoom(
 
                     const newViewport: Bounds = [k * temporaryViewport[0] + b, k * temporaryViewport[1] + b]
 
-                    if (!checkBoundsInMinVisibleX(newViewport, options.boundsMinVisibleX)) {
-                        return;
-                    }
 
-                    temporaryViewport = newViewport;
+                    temporaryViewport = fitBoundsInMinVisibleX(newViewport, temporaryViewport, options.xMinVisible)
+
                 }
             }
 
@@ -241,12 +249,10 @@ export function useDragAndZoom(
 
             const newViewPort: Bounds = [x - (x - temporaryViewport[0]) * factor, x + (temporaryViewport[1] - x) * factor]
 
-            if (!checkBoundsInMinVisibleX(newViewPort, options.boundsMinVisibleX)) {
-                return;
-            }
+            temporaryViewport = fitBoundsInMinVisibleX(newViewPort, temporaryViewport, options.xMinVisible)
 
             temporaryViewport = fitBoundsInLimit(
-                newViewPort,
+                temporaryViewport,
                 options.boundsLimit,
             );
 

@@ -30,6 +30,8 @@ interface BoundsContextType {
     onManipulationEnd(bounds: Bounds): void;
 
     getCurrentXBounds(): Bounds;
+
+    xBoundsMinVisible?: number;
 }
 
 const BoundsContext = createContext<BoundsContextType>({
@@ -47,12 +49,13 @@ const BoundsContext = createContext<BoundsContextType>({
 interface BoundsManagerProps {
     initialXBounds: Bounds;
     xBoundsLimit?: Bounds;
+    xBoundsMinVisible?: number;
 
     children: ReactNode | ReactNode[];
 }
 
 export function BoundsManager(props: BoundsManagerProps): ReactElement {
-    const { initialXBounds, xBoundsLimit, children } = props;
+    const { initialXBounds, xBoundsLimit, xBoundsMinVisible, children } = props;
 
     const {
         addCallback: addXBoundsCallback,
@@ -97,6 +100,7 @@ export function BoundsManager(props: BoundsManagerProps): ReactElement {
         onManipulationEnd,
         settledXBounds: finalXBounds,
         getCurrentXBounds,
+        xBoundsMinVisible,
     };
     const context = useMemo(() => contextValue, Object.values(contextValue));
 

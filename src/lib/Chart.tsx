@@ -72,8 +72,6 @@ interface ChartProps {
     onHover?: (x: number, event: PointerEvent) => void;
     onHoverEnd?: () => void;
     onTouchUp?: (x: number, event: PointerEvent) => void;
-
-    boundsMinVisibleX?: number;
 }
 
 function arrayMergeOverwrite<T>(_: T[], sourceArray: T[]): T[] {
@@ -120,7 +118,7 @@ export interface ChartRef {
 }
 
 export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
-    const { onHover, onHoverEnd, onTouchUp, boundsMinVisibleX } = props;
+    const { onHover, onHoverEnd, onTouchUp } = props;
 
     const worker = useWorker();
 
@@ -219,7 +217,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
         [],
     );
 
-    const is_development_mode = process.env.NODE_ENV === 'development'
+    const isDevelopmentMode = process.env.NODE_ENV === 'development'
 
     return (
         <div className={props.className} style={{ position: "relative", height: "350px", ...props.style }}>
@@ -234,11 +232,10 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
                 onHover={onHover}
                 onHoverEnd={onHoverEnd}
                 onTouchUp={onTouchUp}
-                boundsMinVisibleX={boundsMinVisibleX}
             />
             <ChartContext.Provider value={chartContextValue}>{props.children}</ChartContext.Provider>
 
-            {is_development_mode && fps !== 0 ? (
+            {isDevelopmentMode && fps !== 0 ? (
                 <div
                     style={{
                         position: "absolute",
