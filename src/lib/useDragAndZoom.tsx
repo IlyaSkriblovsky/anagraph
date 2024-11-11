@@ -39,7 +39,7 @@ export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bou
 
 export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, minVisibleX: number | undefined): Bounds {
     if (minVisibleX == null) {
-        minVisibleX = 1;
+        minVisibleX = 1e-3;
     }
 
     if (newBounds[1] - newBounds[0] > minVisibleX) {
