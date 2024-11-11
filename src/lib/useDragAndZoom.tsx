@@ -37,20 +37,21 @@ export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bou
     return bounds;
 }
 
-export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, minVisibleX: number = 1): Bounds {
+export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, minVisibleX: number | undefined): Bounds {
+    if (minVisibleX == null) {
+        minVisibleX = 1;
+    }
+
     if (newBounds[1] - newBounds[0] > minVisibleX) {
         return newBounds;
     }
 
-    const lenBounds = oldBounds[1] - oldBounds[0];
+    const center = (oldBounds[0] + oldBounds[1]) / 2;
 
-    if (lenBounds <= minVisibleX) {
-        return oldBounds
-    }
-
-    const lenVisibleDiff = Math.abs(minVisibleX - lenBounds);
-
-    return [oldBounds[0] + lenVisibleDiff / 2, oldBounds[1] - lenVisibleDiff / 2]
+    return [
+        center - minVisibleX / 2,
+        center + minVisibleX / 2
+    ];
 }
 
 /** @function useDragAndZoom
