@@ -1,5 +1,5 @@
-import { divSize, mulRect, Rect, Size } from "./basic-types";
-import { ChartSettings } from "./settings-types";
+import {divSize, mulRect, Rect, Size} from "./basic-types";
+import {ChartSettings} from "./settings-types";
 
 export function calcManipulationAreaLpx(canvasSizeLpx: Size, chartSettings: ChartSettings): Rect {
     return {
@@ -22,8 +22,8 @@ export function calcYGridAreaLpx(canvasSizeLpx: Size, chartSettings: ChartSettin
             (chartSettings.bottomStatuses.eachHeight + chartSettings.bottomStatuses.gap) * bottomStatusCount -
             (bottomStatusCount > 0
                 ? chartSettings.bottomStatuses.topMargin +
-                  chartSettings.bottomStatuses.bottomMargin -
-                  chartSettings.bottomStatuses.gap
+                chartSettings.bottomStatuses.bottomMargin -
+                chartSettings.bottomStatuses.gap
                 : 0),
     };
 }
@@ -58,7 +58,7 @@ export function calcBottomStatusesAreaLpx(
     bottomStatusCount: number,
 ): Rect {
     return {
-        x: chartSettings.legend.y.width ,
+        x: chartSettings.legend.y.width,
         y:
             canvasSizeLpx.height -
             chartSettings.legend.x.height -

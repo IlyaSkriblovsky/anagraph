@@ -77,36 +77,49 @@ const possibleTicks: [number, TimeUnit][] = [
 
 // inspired by https://github.com/flot/flot/blob/master/source/jquery.flot.time.js#L299
 export function* generateTimeTicks(range: Bounds, pixels: number, minSize: number = 60e3): Generator<number> {
-    const noTicks = 0.3 * Math.sqrt(pixels);
-    const delta = (range[1] - range[0]) / noTicks;
+    const maxTicksNumber = 0.3 * Math.sqrt(pixels);
+    const minMsBetweenTicks = (range[1] - range[0]) / maxTicksNumber;
 
     let i: number;
     for (i = 0; i < possibleTicks.length - 1; i++) {
-        const possibleTicks_i = possibleTicks[i];
-        const possibleTicks_ip1 = possibleTicks[i + 1];
-        const [value, unit] = possibleTicks_i;
-        const [nextValue, nextUnit] = possibleTicks_ip1;
-        const size = value * timeUnitSizeMilliseconds[unit];
-        const nextSize = nextValue * timeUnitSizeMilliseconds[nextUnit];
-        if (delta < (size + nextSize) / 2 && size >= minSize) {
+        const [[value, unit], [nextValue, nextUnit]] = [possibleTicks[i], possibleTicks[i + 1]];
+        const sizeMs = value * timeUnitSizeMilliseconds[unit];
+        const nextSizeMs = nextValue * timeUnitSizeMilliseconds[nextUnit];
+        if (minMsBetweenTicks < (sizeMs + nextSizeMs) / 2 && sizeMs >= minSize) {
             break;
         }
     }
 
-    const possibleTicks_i = possibleTicks[i];
-    let [size, unit] = possibleTicks_i;
-    if (unit == "year") {
-        const magn = parseFloat("1e" + Math.floor(Math.log(delta / timeUnitSizeMilliseconds.year / Math.LN10)));
-        const norm = delta / timeUnitSizeMilliseconds.year / magn;
+    let [size, unit] = possibleTicks[i];
 
-        if (norm < 1.5) {
-            size = magn;
-        } else if (norm < 3) {
-            size = 2 * magn;
-        } else if (norm < 7.5) {
-            size = 5 * magn;
+    if (unit == "year") {
+        const countOfNumberInYear = Math.pow(
+            10,
+            Math.floor(Math.log(minMsBetweenTicks / timeUnitSizeMilliseconds.year) / Math.LN10),
+        );
+        const mantissa = minMsBetweenTicks / timeUnitSizeMilliseconds.year / countOfNumberInYear;
+
+        const multipliers = [1, 2, 5, 10];
+        for (const multiplier of multipliers) {
+            if (size * multiplier * timeUnitSizeMilliseconds.year > minSize) {
+                size *= multiplier;
+                break;
+            }
+        }
+
+        const yearSize = countOfNumberInYear * timeUnitSizeMilliseconds.year;
+
+        if (mantissa < 1.5 && yearSize >= minSize) {
+            size = countOfNumberInYear;
+        } else if (mantissa < 3 && 2 * yearSize >= minSize) {
+            size = 2 * countOfNumberInYear;
+        } else if (mantissa < 7.5 && 5 * yearSize >= minSize) {
+            size = 5 * countOfNumberInYear;
         } else {
-            size = 10 * magn;
+            size = 10 * countOfNumberInYear;
+            if (size * timeUnitSizeMilliseconds.year < minSize) {
+                size *= 2;
+            }
         }
 
         if (size < 1) {
@@ -154,7 +167,7 @@ export function* generateTimeTicks(range: Bounds, pixels: number, minSize: numbe
     if (step >= timeUnitSizeMilliseconds.day) {
         d.setHours(0);
     }
-    if (step >= timeUnitSizeMilliseconds.day * 4) {
+    if (step >= timeUnitSizeMilliseconds.day * 30) {
         d.setDate(1);
     }
     if (step >= timeUnitSizeMilliseconds.month * 2) {

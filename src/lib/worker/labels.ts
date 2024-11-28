@@ -1,16 +1,12 @@
-export function yLabel(
-    value: number | null | undefined,
-    precision: number | null = 1
-): string {
+export function yLabel(value: number | null | undefined, precision: number | null = 1): string {
     if (value == null) {
-        return '';
+        return "";
     }
 
     const str = precision != null ? value.toFixed(precision) : value.toString();
 
-    return str.replace(/([,.]\d*?)0+$/, '$1').replace(/\.$/, '');
+    return str.replace(/([,.]\d*?)0+$/, "$1").replace(/\.$/, "");
 }
-
 
 export function timeXLabel(x: number, prevX: number | null): string[] {
     const dt = new Date(x);

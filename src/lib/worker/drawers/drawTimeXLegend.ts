@@ -19,7 +19,7 @@ export function drawTimeXLegend(
         legendSettings.labels.fontFamily
     }`;
 
-    const sampleSize = ctx.measureText("00.00.0001"); // for not set start time on left corner of x-axis
+    const sampleSize = ctx.measureText(legendSettings.x.sampleSizeText); //"00.00.0000"
     const bulletRadiusDpr = legendSettings.bulletRadius * dpr;
 
     let prevX: number | null = null;
@@ -27,7 +27,7 @@ export function drawTimeXLegend(
     for (const x of generateTimeTicks(
         xBounds,
         xLegendArea.width,
-        (sampleSize.width / xLegendArea.width) * (xBounds[1] - xBounds[0]) * 1.1,
+        (sampleSize.width / xLegendArea.width) * (xBounds[1] - xBounds[0]) * legendSettings.x.tickLabelGapMultiplier,
     )) {
         const xpx = Math.round(scale(x, xBounds, [xLegendArea.x, xLegendArea.x + xLegendArea.width]));
         ctx.beginPath();

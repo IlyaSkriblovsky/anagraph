@@ -20,6 +20,8 @@ export interface LegendSettings {
         draw: boolean;
         height: number;
         gap: number;
+        tickLabelGapMultiplier: number;
+        sampleSizeText: string;
     };
     y: {
         draw: boolean;
@@ -61,6 +63,8 @@ export const defaultChartSettings: ChartSettings = {
             draw: true,
             height: 42,
             gap: 6,
+            tickLabelGapMultiplier: 1.1,
+            sampleSizeText: "00.00.0000",
         },
         y: {
             draw: true,
