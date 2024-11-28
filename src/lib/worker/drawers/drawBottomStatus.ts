@@ -49,9 +49,10 @@ export function drawBottomStatus(
     for (const [x1, x2] of intervals) {
         const t1 = Math.round((x1 - xMin) * multiplier + drawX1);
         const t2 = Math.round((x2 - xMin) * multiplier + drawX1);
+        const width = Math.max(t2 - t1, 1);
 
         // FIXME: optimize this by skipping drawing if the filling is outside of the plot area
         // FIXME #2: maybe optimize this by using binary search to find the first interval that is inside the plot area
-        ctx.fillRect(t1, drawY, t2 - t1, drawHeight);
+        ctx.fillRect(t1, drawY, width, drawHeight);
     }
 }
