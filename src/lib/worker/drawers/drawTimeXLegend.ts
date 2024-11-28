@@ -19,7 +19,7 @@ export function drawTimeXLegend(
         legendSettings.labels.fontFamily
     }`;
 
-    const sampleSize = ctx.measureText("00.00.0000");
+    const sampleSize = ctx.measureText("00.00.0001"); // for not set start time on left corner of x-axis
     const bulletRadiusDpr = legendSettings.bulletRadius * dpr;
 
     let prevX: number | null = null;

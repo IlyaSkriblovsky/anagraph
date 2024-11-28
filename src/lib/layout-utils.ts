@@ -42,7 +42,7 @@ export function calcXGridAreaLpx(canvasSizeLpx: Size, chartSettings: ChartSettin
     return {
         x: chartSettings.legend.y.width,
         y: chartSettings.topGap,
-        width: canvasSizeLpx.width - chartSettings.legend.y.width,
+        width: canvasSizeLpx.width - chartSettings.legend.y.width - chartSettings.grid.outline.lineWidth,
         height: canvasSizeLpx.height - chartSettings.topGap - chartSettings.legend.x.height,
     };
 }
@@ -58,7 +58,7 @@ export function calcBottomStatusesAreaLpx(
     bottomStatusCount: number,
 ): Rect {
     return {
-        x: chartSettings.legend.y.width,
+        x: chartSettings.legend.y.width ,
         y:
             canvasSizeLpx.height -
             chartSettings.legend.x.height -
