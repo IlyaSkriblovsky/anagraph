@@ -82,6 +82,7 @@ export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, mi
  * @param onEnd     Коллбэк, который вызовется при завершении манипуляции
  * @param onHover   Коллбэк, который вызовется при движении курсора без нажатия
  * @param onHoverEnd Коллбэк, который вызовется при завершении движения курсора без нажатия
+ * @param onTouchUp Коллбэк, который вызовется при завершении тач действия
  * @param options   Дополнительные параметры
  */
 export function useDragAndZoom(

@@ -25,7 +25,7 @@ import { useBoundsContext } from "./BoundsManager";
 import { Manipulator } from "./Manipulator";
 import { DeepPartial, noop } from "ts-essentials";
 import deepmerge from "deepmerge";
-import { divSize, Size } from "./basic-types";
+import {Bounds, divSize, Size} from "./basic-types";
 import { ChartSettings, defaultChartSettings } from "./settings-types";
 import { BottomStatus, Id, LineInfo, VerticalFilling } from "./worker/worker-types";
 import { calcManipulationAreaLpx } from "./layout-utils";
@@ -72,6 +72,7 @@ interface ChartProps {
     onHover?: (x: number, event: PointerEvent) => void;
     onHoverEnd?: () => void;
     onTouchUp?: (x: number, event: PointerEvent) => void;
+    onChangeBoundsEnd?: (bounds: Bounds) => void;
 }
 
 function arrayMergeOverwrite<T>(_: T[], sourceArray: T[]): T[] {
@@ -118,7 +119,7 @@ export interface ChartRef {
 }
 
 export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
-    const { onHover, onHoverEnd, onTouchUp } = props;
+    const { onHover, onHoverEnd, onTouchUp, onChangeBoundsEnd } = props;
 
     const worker = useWorker();
 
@@ -232,6 +233,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
                 onHover={onHover}
                 onHoverEnd={onHoverEnd}
                 onTouchUp={onTouchUp}
+                onChangeBoundsEnd={onChangeBoundsEnd}
             />
             <ChartContext.Provider value={chartContextValue}>{props.children}</ChartContext.Provider>
 
