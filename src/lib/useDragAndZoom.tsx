@@ -37,7 +37,7 @@ export function fitBoundsInLimit(bounds: Bounds, limit: Bounds | undefined): Bou
     return bounds;
 }
 
-export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, minVisibleX: number | undefined): Bounds {
+export function fitBoundsInMinVisibleX(newBounds: Bounds, oldBounds: Bounds, minVisibleX: number | undefined): Bounds {
     if (minVisibleX == null) {
         minVisibleX = 1e-3;
     }
@@ -48,10 +48,21 @@ export function fitBoundsInMinVisibleX (newBounds: Bounds, oldBounds: Bounds, mi
 
     const center = (oldBounds[0] + oldBounds[1]) / 2;
 
-    return [
-        center - minVisibleX / 2,
-        center + minVisibleX / 2
-    ];
+    return [center - minVisibleX / 2, center + minVisibleX / 2];
+}
+
+export function fitBoundsInMinVisibleXAndLimit(
+    newBounds: Bounds,
+    oldBounds: Bounds,
+    minVisibleX: number | undefined,
+    limit: Bounds | undefined,
+) {
+    let temporaryViewport = newBounds;
+
+    temporaryViewport = fitBoundsInMinVisibleX(temporaryViewport, oldBounds, minVisibleX);
+    temporaryViewport = fitBoundsInLimit(temporaryViewport, limit);
+
+    return temporaryViewport;
 }
 
 /** @function useDragAndZoom
@@ -138,11 +149,9 @@ export function useDragAndZoom(
                     const k = (prev1 - prev2) / (new1 - new2);
                     const b = prev1 - k * new1;
 
-                    const newViewport: Bounds = [k * temporaryViewport[0] + b, k * temporaryViewport[1] + b]
+                    const newViewport: Bounds = [k * temporaryViewport[0] + b, k * temporaryViewport[1] + b];
 
-
-                    temporaryViewport = fitBoundsInMinVisibleX(newViewport, temporaryViewport, options.xMinVisible)
-
+                    temporaryViewport = fitBoundsInMinVisibleX(newViewport, temporaryViewport, options.xMinVisible);
                 }
             }
 
@@ -192,7 +201,7 @@ export function useDragAndZoom(
             if (event.pointerType != "mouse") {
                 const bounds = element.getBoundingClientRect();
                 onTouchUp?.(calcXInTemporaryViewport(event.pageX, bounds), event);
-                return
+                return;
             }
 
             delete touchInfo[event.pointerId];
@@ -209,8 +218,8 @@ export function useDragAndZoom(
             const diffX = moveX - startX;
             const diffY = moveY - startY;
 
-            if (Math.abs(diffX) < Math.abs(diffY) && event.touches.length === 1) return
-            event.preventDefault()
+            if (Math.abs(diffX) < Math.abs(diffY) && event.touches.length === 1) return;
+            event.preventDefault();
 
             const bounds = element.getBoundingClientRect();
             iterateTouchList(event.changedTouches, (touch) => {
@@ -249,12 +258,38 @@ export function useDragAndZoom(
 
             const factor = Math.pow(wheelZoomFactor, event.deltaY / 53);
 
-            const newViewPort: Bounds = [x - (x - temporaryViewport[0]) * factor, x + (temporaryViewport[1] - x) * factor]
+            const newViewPort: Bounds = [
+                x - (x - temporaryViewport[0]) * factor,
+                x + (temporaryViewport[1] - x) * factor,
+            ];
 
-            temporaryViewport = fitBoundsInMinVisibleX(newViewPort, temporaryViewport, options.xMinVisible)
-
-            temporaryViewport = fitBoundsInLimit(
+            temporaryViewport = fitBoundsInMinVisibleXAndLimit(
+                newViewPort,
                 temporaryViewport,
+                options.xMinVisible,
+                options.boundsLimit,
+            );
+
+            onEnd(temporaryViewport);
+        };
+
+        const onDoubleClick = (event: MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const bounds = element.getBoundingClientRect();
+            const x = calcXInTemporaryViewport(event.pageX, bounds);
+
+            const factor = event.altKey ? 2 : 0.5;
+
+            const newViewPort: Bounds = [
+                x - (x - temporaryViewport[0]) * factor,
+                x + (temporaryViewport[1] - x) * factor,
+            ];
+
+            temporaryViewport = fitBoundsInMinVisibleXAndLimit(
+                newViewPort,
+                temporaryViewport,
+                options.xMinVisible,
                 options.boundsLimit,
             );
 
@@ -271,6 +306,8 @@ export function useDragAndZoom(
         element.addEventListener("pointermove", onPointerMove);
         element.addEventListener("pointerout", onPointerOut);
 
+        element.addEventListener("dblclick", onDoubleClick);
+
         return () => {
             element.removeEventListener("touchstart", onTouchStart);
             element.removeEventListener("touchmove", onTouchMove);
@@ -281,6 +318,8 @@ export function useDragAndZoom(
             element.removeEventListener("pointerup", onPointerUp);
             element.removeEventListener("pointermove", onPointerMove);
             element.removeEventListener("pointerout", onPointerOut);
+
+            element.removeEventListener("dblclick", onDoubleClick);
         };
     }, [element, onChange, onEnd, viewport[0], viewport[1], options.boundsLimit?.[0], options.boundsLimit?.[1]]);
 }
