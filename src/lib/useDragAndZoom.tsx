@@ -51,20 +51,6 @@ export function fitBoundsInMinVisibleX(newBounds: Bounds, oldBounds: Bounds, min
     return [center - minVisibleX / 2, center + minVisibleX / 2];
 }
 
-export function fitBoundsInMinVisibleXAndLimit(
-    newBounds: Bounds,
-    oldBounds: Bounds,
-    minVisibleX: number | undefined,
-    limit: Bounds | undefined,
-) {
-    let temporaryViewport = newBounds;
-
-    temporaryViewport = fitBoundsInMinVisibleX(temporaryViewport, oldBounds, minVisibleX);
-    temporaryViewport = fitBoundsInLimit(temporaryViewport, limit);
-
-    return temporaryViewport;
-}
-
 /** @function useDragAndZoom
  *
  * Обработчик манипуляций горизонтального драга и зума над HTML-элементом.
@@ -249,51 +235,34 @@ export function useDragAndZoom(
             onHoverEnd?.();
         };
 
-        const onWheel = (event: WheelEvent) => {
+        const zoom = (event: MouseEvent | WheelEvent, factor: number) => {
             event.preventDefault();
             event.stopPropagation();
 
             const bounds = element.getBoundingClientRect();
             const x = calcXInTemporaryViewport(event.pageX, bounds);
 
-            const factor = Math.pow(wheelZoomFactor, event.deltaY / 53);
-
-            const newViewPort: Bounds = [
+            let newViewPort: Bounds = [
                 x - (x - temporaryViewport[0]) * factor,
                 x + (temporaryViewport[1] - x) * factor,
             ];
 
-            temporaryViewport = fitBoundsInMinVisibleXAndLimit(
-                newViewPort,
-                temporaryViewport,
-                options.xMinVisible,
-                options.boundsLimit,
-            );
+            newViewPort = fitBoundsInMinVisibleX(newViewPort, temporaryViewport, options.xMinVisible);
+            newViewPort = fitBoundsInLimit(newViewPort, options.boundsLimit);
 
-            onEnd(temporaryViewport);
+            onEnd(newViewPort);
+        };
+
+        const onWheel = (event: WheelEvent) => {
+            const factor = Math.pow(wheelZoomFactor, event.deltaY / 53);
+
+            zoom(event, factor);
         };
 
         const onDoubleClick = (event: MouseEvent) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const bounds = element.getBoundingClientRect();
-            const x = calcXInTemporaryViewport(event.pageX, bounds);
-
             const factor = event.altKey ? 2 : 0.5;
 
-            const newViewPort: Bounds = [
-                x - (x - temporaryViewport[0]) * factor,
-                x + (temporaryViewport[1] - x) * factor,
-            ];
-
-            temporaryViewport = fitBoundsInMinVisibleXAndLimit(
-                newViewPort,
-                temporaryViewport,
-                options.xMinVisible,
-                options.boundsLimit,
-            );
-
-            onEnd(temporaryViewport);
+            zoom(event, factor);
         };
 
         element.addEventListener("touchstart", onTouchStart);
