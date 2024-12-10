@@ -9,10 +9,12 @@ interface LineProps {
     color: string;
     lineWidth?: number;
     yBounds: Bounds;
+    isFill?: boolean;
+    fillColor?: string;
 }
 
 export function Line(props: LineProps) {
-    const { points, color, lineWidth = 2, yBounds } = props;
+    const { points, color, lineWidth = 2, yBounds, fillColor, isFill } = props;
 
     const id = useId();
 
@@ -24,13 +26,15 @@ export function Line(props: LineProps) {
             color,
             lineWidth,
             yBounds,
+            isFill,
+            fillColor,
         });
         return () => chartContext.removeLine(id);
     }, []);
 
     useUpdateEffect(() => {
-        chartContext.changeLine(id, { points, color, lineWidth, yBounds });
-    }, [points, color, lineWidth, yBounds]);
+        chartContext.changeLine(id, { points, color, lineWidth, yBounds, isFill, fillColor });
+    }, [points, color, lineWidth, yBounds, isFill, fillColor]);
 
     return null;
 }

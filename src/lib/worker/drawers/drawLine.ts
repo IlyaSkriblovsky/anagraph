@@ -8,9 +8,11 @@ export function drawLine(drawContext: DrawContext, lineAttrs: LineInfo, xBounds:
         lineWidth,
         points,
         yBounds: [yMin, yMax],
+        isFill,
+        fillColor,
     } = lineAttrs;
 
-    const { ctx, devicePixelRatio } = drawContext;
+    const { ctx, devicePixelRatio, canvas } = drawContext;
 
     const [downX, downY] = visualDownsample(points, xBounds, drawArea.width);
 
@@ -20,6 +22,7 @@ export function drawLine(drawContext: DrawContext, lineAttrs: LineInfo, xBounds:
     ctx.lineCap = "square";
     ctx.lineJoin = "bevel";
     ctx.strokeStyle = color;
+    ctx.fillStyle = fillColor ?? color;
 
     const [xMin, xMax] = xBounds;
     const { x: gridRectX, y: gridRectY, width: gridRectWidth, height: gridRectHeight } = drawArea;
@@ -36,11 +39,34 @@ export function drawLine(drawContext: DrawContext, lineAttrs: LineInfo, xBounds:
     }
 
     ctx.beginPath();
-    let penDown = false;
+    let penDown: boolean = false;
+    let startX: number | null = null;
+
+    function fillPath(startX: number, endX: number) {
+        ctx.stroke();
+        ctx.lineTo(endX, canvas.height);
+        ctx.lineTo(startX, canvas.height);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+    }
+
     for (let i = 0; i < downX.length; i++) {
-        const x = downX[i],
-            y = downY[i];
+        const x = downX[i];
+        const y = downY[i];
+
+        if (!startX && y) {
+            startX = x;
+        }
+
         if (y == null) {
+            if (isFill && startX) {
+                const endX = downX[i - 1];
+                fillPath(startX, endX);
+                startX = null;
+            }
+
             penDown = false;
             continue;
         }
@@ -52,4 +78,8 @@ export function drawLine(drawContext: DrawContext, lineAttrs: LineInfo, xBounds:
         }
     }
     ctx.stroke();
+    if (isFill && startX) {
+        const endX = downX[downX.length - 1];
+        fillPath(startX, endX);
+    }
 }
