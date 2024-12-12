@@ -25,7 +25,7 @@ import { useBoundsContext } from "./BoundsManager";
 import { Manipulator } from "./Manipulator";
 import { DeepPartial, noop } from "ts-essentials";
 import deepmerge from "deepmerge";
-import {Bounds, divSize, Size} from "./basic-types";
+import { Bounds, divSize, Size } from "./basic-types";
 import { ChartSettings, defaultChartSettings } from "./settings-types";
 import { BottomStatus, Id, LineInfo, VerticalFilling } from "./worker/worker-types";
 import { calcManipulationAreaLpx } from "./layout-utils";
@@ -73,6 +73,7 @@ interface ChartProps {
     onHoverEnd?: () => void;
     onTouchUp?: (x: number, event: PointerEvent) => void;
     onChangeBoundsEnd?: (bounds: Bounds) => void;
+    onChangeBounds?: (bounds: Bounds) => void;
 }
 
 function arrayMergeOverwrite<T>(_: T[], sourceArray: T[]): T[] {
@@ -116,10 +117,12 @@ function useCanvas(onResize: (sizeCpx: Size) => void) {
 
 export interface ChartRef {
     xToPixelOffset(x: number): number | null;
+    pixelOffsetToX(pixelOffset: number): number | null;
+    setViewBounds(bounds: Bounds): void;
 }
 
 export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
-    const { onHover, onHoverEnd, onTouchUp, onChangeBoundsEnd } = props;
+    const { onHover, onHoverEnd, onTouchUp, onChangeBoundsEnd, onChangeBounds } = props;
 
     const worker = useWorker();
 
@@ -154,7 +157,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
         sendRedraw.current();
     }, [worker, effectiveSettings]);
 
-    const { getCurrentXBounds, addXBoundsCallback, removeXBoundsCallback } = useBoundsContext();
+    const { getCurrentXBounds, addXBoundsCallback, removeXBoundsCallback, onManipulationEnd } = useBoundsContext();
     const sendRedraw = useRef(() => {
         worker.postMessage(setXBoundsAndRedrawMessage(getCurrentXBounds()));
     });
@@ -214,11 +217,29 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
                 const percent = (x - xBounds[0]) / (xBounds[1] - xBounds[0]);
                 return latestGridAreaLpx.current.x + percent * latestGridAreaLpx.current.width;
             },
+            pixelOffsetToX: (pixelOffset: number) => {
+                const xBounds = getCurrentXBounds();
+                const gridAreaX = latestGridAreaLpx.current.x;
+                const gridAreaWidth = latestGridAreaLpx.current.width;
+
+                if (pixelOffset < gridAreaX || pixelOffset > gridAreaX + gridAreaWidth) {
+                    return null;
+                }
+
+                const percent = (pixelOffset - gridAreaX) / gridAreaWidth;
+
+                return xBounds[0] + percent * (xBounds[1] - xBounds[0]);
+            },
+            setViewBounds: (bounds: Bounds) => {
+                onManipulationEnd(bounds);
+                onChangeBoundsEnd?.(bounds);
+                return;
+            },
         }),
         [],
     );
 
-    const isDevelopmentMode = process.env.NODE_ENV === 'development'
+    const isDevelopmentMode = process.env.NODE_ENV === "development";
 
     return (
         <div className={props.className} style={{ position: "relative", height: "350px", ...props.style }}>
@@ -234,6 +255,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
                 onHoverEnd={onHoverEnd}
                 onTouchUp={onTouchUp}
                 onChangeBoundsEnd={onChangeBoundsEnd}
+                onChangeBounds={onChangeBounds}
             />
             <ChartContext.Provider value={chartContextValue}>{props.children}</ChartContext.Provider>
 

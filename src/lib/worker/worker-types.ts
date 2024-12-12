@@ -14,6 +14,8 @@ export interface LineInfo {
     color: string;
     lineWidth: number;
     yBounds: Bounds;
+    isFill?: boolean;
+    fillColor?: string;
 }
 
 export interface VerticalFilling {
