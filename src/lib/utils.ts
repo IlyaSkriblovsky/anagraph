@@ -34,12 +34,13 @@ export function* generateTicks(range: Bounds, pixels: number, minPixels: number)
     }
     const xStep = Math.pow(10, xStepLog);
 
-    const epsilon = 1.0001;
+    const epsilonMin = range[0] > 0 ? 1 / 1.0001 : 1.0001;
+    const epsilonMax = range[1] > 0 ? 1.0001 : 1 / 1.0001;
 
-    const xMin = Math.ceil((range[0] * epsilon) / epsilon / xStep) * xStep;
-    const xMax = Math.floor((range[1] * epsilon) / xStep) * xStep;
+    const xMin = Math.ceil((range[0] * epsilonMin) / xStep) * xStep * epsilonMin;
+    const xMax = Math.floor((range[1] * epsilonMax) / xStep) * xStep * epsilonMax;
 
-    for (let x = xMin; x <= xMax * epsilon; x += xStep) {
+    for (let x = xMin; x <= xMax; x += xStep) {
         yield x;
     }
 }
