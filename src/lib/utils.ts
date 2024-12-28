@@ -40,8 +40,16 @@ export function* generateTicks(range: Bounds, pixels: number, minPixels: number)
     const xMin = Math.ceil((range[0] * epsilonMin) / xStep) * xStep * epsilonMin;
     const xMax = Math.floor((range[1] * epsilonMax) / xStep) * xStep * epsilonMax;
 
+    if (xMin - range[0] > xStep / 3) {
+        yield range[0];
+    }
+
     for (let x = xMin; x <= xMax; x += xStep) {
         yield x;
+    }
+
+    if (range[1] - xMax > xStep / 3) {
+        yield range[1];
     }
 }
 
