@@ -17,7 +17,12 @@ export function drawYLegend(drawContext: DrawContext, legendSettings: LegendSett
 
     const bulletRadiusDpr = legendSettings.bulletRadius * dpr;
 
-    for (const y of generateTicks(yBounds, drawArea.height, legendSettings.y.minHeight)) {
+    for (const y of generateTicks(
+        yBounds,
+        drawArea.height,
+        legendSettings.y.minHeight,
+        legendSettings.labels.fontSize,
+    )) {
         const ypx = Math.round(scale(y, yBounds, [drawArea.y + drawArea.height, drawArea.y]));
         ctx.beginPath();
         ctx.ellipse(drawArea.x, ypx, bulletRadiusDpr, bulletRadiusDpr, 0, 0, 2 * Math.PI);

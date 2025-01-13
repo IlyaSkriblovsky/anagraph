@@ -20,7 +20,12 @@ const log10_5 = Math.log10(5);
 const log10_4 = Math.log10(4);
 const log10_2 = Math.log10(2);
 
-export function* generateTicks(range: Bounds, pixels: number, minPixels: number): Generator<number> {
+export function* generateTicks(
+    range: Bounds,
+    pixels: number,
+    minPixels: number,
+    startOrEndMinPixels?: number,
+): Generator<number> {
     const xRange = range[1] - range[0];
 
     const targetXStepLog = Math.log10((xRange / pixels) * minPixels);
@@ -40,7 +45,7 @@ export function* generateTicks(range: Bounds, pixels: number, minPixels: number)
     const xMin = Math.ceil((range[0] * epsilonMin) / xStep) * xStep * epsilonMin;
     const xMax = Math.floor((range[1] * epsilonMax) / xStep) * xStep * epsilonMax;
 
-    if (xMin - range[0] > xStep / 3) {
+    if (startOrEndMinPixels && xMin - range[0] > startOrEndMinPixels) {
         yield range[0];
     }
 
@@ -48,7 +53,7 @@ export function* generateTicks(range: Bounds, pixels: number, minPixels: number)
         yield x;
     }
 
-    if (range[1] - xMax > xStep / 3) {
+    if (startOrEndMinPixels && range[1] - xMax > startOrEndMinPixels) {
         yield range[1];
     }
 }
