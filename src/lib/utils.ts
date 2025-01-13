@@ -24,7 +24,7 @@ export function* generateTicks(
     range: Bounds,
     pixels: number,
     minPixels: number,
-    startOrEndMinPixels?: number,
+    minLineHeight?: number,
 ): Generator<number> {
     const xRange = range[1] - range[0];
 
@@ -45,7 +45,7 @@ export function* generateTicks(
     const xMin = Math.ceil((range[0] * epsilonMin) / xStep) * xStep * epsilonMin;
     const xMax = Math.floor((range[1] * epsilonMax) / xStep) * xStep * epsilonMax;
 
-    if (startOrEndMinPixels && xMin - range[0] > startOrEndMinPixels) {
+    if (minLineHeight && xMin - range[0] > minLineHeight) {
         yield range[0];
     }
 
@@ -53,7 +53,7 @@ export function* generateTicks(
         yield x;
     }
 
-    if (startOrEndMinPixels && range[1] - xMax > startOrEndMinPixels) {
+    if (minLineHeight && range[1] - xMax > minLineHeight) {
         yield range[1];
     }
 }
