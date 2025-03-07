@@ -24,11 +24,14 @@ export function statsReportMessage(fps: number): StatsReportMessage {
 
 interface SetCanvasMessage {
     type: "setCanvas";
-    canvas?: OffscreenCanvas;
+    canvas?: OffscreenCanvas | HTMLCanvasElement;
     devicePixelRatio: number;
 }
 
-export function setCanvasMessage(canvas: OffscreenCanvas | undefined, devicePixelRatio: number): SetCanvasMessage {
+export function setCanvasMessage(
+    canvas: OffscreenCanvas | HTMLCanvasElement | undefined,
+    devicePixelRatio: number,
+): SetCanvasMessage {
     return { type: "setCanvas", canvas, devicePixelRatio };
 }
 

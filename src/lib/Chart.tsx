@@ -136,6 +136,11 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
     useEffect(() => {
         if (canvas == null) return;
 
+        if (canvas.transferControlToOffscreen === undefined) {
+            worker.postMessage(setCanvasMessage(canvas, window.devicePixelRatio));
+            return;
+        }
+
         const offscreenCanvas = canvas.transferControlToOffscreen();
         worker.postMessage(setCanvasMessage(offscreenCanvas, window.devicePixelRatio), [offscreenCanvas]);
     }, [canvas]);

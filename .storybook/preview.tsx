@@ -1,6 +1,6 @@
 import type { Preview } from "@storybook/react";
-import AnagraphChartWorker from "../src/stories/storybook-worker";
 import { WorkerCreatorProvider } from "../src/lib";
+import { getCreateWorkerOrFallback } from "../src/stories/utils";
 
 const preview: Preview = {
     parameters: {
@@ -14,7 +14,7 @@ const preview: Preview = {
     },
     decorators: [
         (Story, context) => (
-            <WorkerCreatorProvider workerCreator={() => new AnagraphChartWorker()}>{Story()}</WorkerCreatorProvider>
+            <WorkerCreatorProvider workerCreator={getCreateWorkerOrFallback()}>{Story()}</WorkerCreatorProvider>
         ),
     ],
 };

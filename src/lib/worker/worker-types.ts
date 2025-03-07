@@ -2,8 +2,8 @@ import { ChartSettings } from "../settings-types";
 import { Bounds, LineData } from "../basic-types";
 
 export interface DrawContext {
-    canvas: OffscreenCanvas;
-    ctx: OffscreenCanvasRenderingContext2D;
+    canvas: OffscreenCanvas | HTMLCanvasElement;
+    ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
     devicePixelRatio: number;
 }
 

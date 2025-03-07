@@ -1,5 +1,5 @@
 export { WorkerCreatorProvider } from "./WorkerCreatorContext";
-export { startWorker } from "./worker";
+export { startWorker, createFallback } from "./worker";
 export { Chart } from "./Chart";
 export type { ChartRef } from "./Chart";
 export { Line } from "./Line";
