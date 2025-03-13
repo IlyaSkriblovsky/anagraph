@@ -13,7 +13,7 @@ const WorkerCreatorContext = createContext<WorkerCreatorContextType>({
 });
 
 interface WorkerCreatorProviderProps {
-    workerCreator: () => Worker;
+    workerCreator: WorkerCreator;
     children: ReactNode | ReactNode[];
 }
 
