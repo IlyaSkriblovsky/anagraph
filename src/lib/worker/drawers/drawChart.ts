@@ -8,6 +8,7 @@ import { drawLine } from "./drawLine";
 import { drawVerticalFilling } from "./drawVerticalFilling";
 import { drawBottomStatus, drawBottomStatusYLegend } from "./drawBottomStatus";
 import { calcBottomStatusesAreaCpx, calcXGridAreaCpx, calcXLegendAreaCpx, calcYGridAreaCpx } from "../../layout-utils";
+import { drawFillArea } from "./drawFillArea";
 
 export function drawChart(drawContext: DrawContext, chartInfo: ChartInfo) {
     const t1 = new Date().getTime();
@@ -69,6 +70,9 @@ export function drawChart(drawContext: DrawContext, chartInfo: ChartInfo) {
     let clipPath = new Path2D();
     clipPath.rect(yGridArea.x, yGridArea.y, yGridArea.width, yGridArea.height);
     ctx.clip(clipPath);
+    for (const fillAreaAttrs of chartInfo.fillAreas.values()) {
+        drawFillArea(drawContext, fillAreaAttrs, chartInfo.xBounds, yGridArea);
+    }
     for (const fillingAttrs of verticalFillings.values()) {
         drawVerticalFilling(drawContext, fillingAttrs, xBounds, yGridArea);
     }
