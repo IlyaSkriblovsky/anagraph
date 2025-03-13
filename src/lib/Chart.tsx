@@ -29,6 +29,7 @@ import { Bounds, divSize, Size } from "./basic-types";
 import { ChartSettings, defaultChartSettings } from "./settings-types";
 import { BottomStatus, FillArea, Id, LineInfo, VerticalFilling } from "./worker/worker-types";
 import { calcManipulationAreaLpx } from "./layout-utils";
+import { createCanvasHandler } from "./worker";
 
 interface ChartContextType {
     addLine(id: Id, lineInfo: LineInfo): void;
@@ -88,9 +89,38 @@ function arrayMergeOverwrite<T>(_: T[], sourceArray: T[]): T[] {
     return sourceArray;
 }
 
-function useWorker() {
+interface CanvasWorkerSubset {
+    postMessage(msg: MainToWorkerMessage, transfer?: Transferable[]): void;
+    addEventListener(event: "message", handler: (msg: MessageEvent<WorkerToMainMessage>) => void): void;
+    removeEventListener(event: "message", handler: (msg: MessageEvent<WorkerToMainMessage>) => void): void;
+    terminate(): void;
+}
+
+function createFallbackPseudoWorker(): CanvasWorkerSubset {
+    console.log("Anagraph: Warning: OffscreenCanvas is not supported, using single-threaded drawing code");
+    const handler = createCanvasHandler((msg) => global.postMessage(msg));
+    handler.startSendingFps();
+    return {
+        postMessage(msg: MainToWorkerMessage, transfer?: Transferable[]) {
+            setTimeout(() => handler.handleMainToWorkerMessage(msg), 0);
+        },
+        addEventListener: global.addEventListener.bind(global),
+        removeEventListener: global.removeEventListener.bind(global),
+        terminate: () => {
+            handler.stopSendingFps();
+        },
+    };
+}
+function useWorker(): CanvasWorkerSubset {
+    const hasOffscreenSupport = HTMLCanvasElement.prototype.transferControlToOffscreen !== undefined;
     const workerCreator = useWorkerCreator();
-    const worker = useMemo(() => workerCreator(), []);
+    const worker = useMemo((): CanvasWorkerSubset => {
+        if (hasOffscreenSupport) {
+            return workerCreator();
+        } else {
+            return createFallbackPseudoWorker();
+        }
+    }, [hasOffscreenSupport]);
     useUnmount(() => worker.terminate());
     return worker;
 }
