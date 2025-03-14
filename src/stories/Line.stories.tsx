@@ -44,6 +44,8 @@ export const MonthOfData: Story = {
         lineWidth: 3,
         points: randomDataForMonth,
         yBounds: yBounds100,
+        isFill: false,
+        fillColor: "rgba(11,122,248,0.5)",
     },
     argTypes: {
         points: {

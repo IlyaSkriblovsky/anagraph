@@ -1,15 +1,10 @@
-import { DrawContext, FillArea, LineInfo } from "../worker-types";
+import { DrawContext, FillArea } from "../worker-types";
 import { Bounds, Rect } from "../../basic-types";
 import { visualDownsample } from "../../downsample";
+import { transformDataToDrawAreaCoord } from "./draw-utils";
 
 export function drawFillArea(drawContext: DrawContext, fillAreaAttrs: FillArea, xBounds: Bounds, drawArea: Rect) {
-    const {
-        points,
-        yBounds: [yMin, yMax],
-        fillColor,
-        borderWidth,
-        borderColor,
-    } = fillAreaAttrs;
+    const { points, yBounds, fillColor, borderWidth, borderColor } = fillAreaAttrs;
 
     const { ctx, devicePixelRatio } = drawContext;
 
@@ -26,19 +21,7 @@ export function drawFillArea(drawContext: DrawContext, fillAreaAttrs: FillArea, 
 
     if (downX.length === 0) return;
 
-    const [xMin, xMax] = xBounds;
-    const { x: gridRectX, y: gridRectY, width: gridRectWidth, height: gridRectHeight } = drawArea;
-    const gridBottom = gridRectY + gridRectHeight;
-    const gridWidthDivXBounds = gridRectWidth / (xMax - xMin);
-    const gridHeightDivYBounds = gridRectHeight / (yMax - yMin);
-    // Math.round() is here because canvas is faster with integer coordinates
-    for (let i = 0, len = downX.length; i < len; i++) {
-        downX[i] = Math.round((downX[i] - xMin) * gridWidthDivXBounds + gridRectX);
-    }
-    for (let i = 0, len = downY.length; i < len; i++) {
-        const y = downY[i];
-        downY[i] = y == null ? null : Math.round(gridBottom - (y - yMin) * gridHeightDivYBounds);
-    }
+    transformDataToDrawAreaCoord(xBounds, yBounds, drawArea, downX, downY);
 
     ctx.lineWidth = (borderWidth ?? 2) * devicePixelRatio;
     ctx.lineCap = "square";
@@ -61,9 +44,9 @@ export function drawFillArea(drawContext: DrawContext, fillAreaAttrs: FillArea, 
 
     ctx.closePath();
 
+    ctx.fill();
+
     if (borderWidth) {
         ctx.stroke();
     }
-
-    ctx.fill();
 }
