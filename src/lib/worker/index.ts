@@ -6,6 +6,7 @@ import {
     isRemoveObjectMessage,
     MainToWorkerMessage,
     statsReportMessage,
+    WorkerToMainMessage,
 } from "./messages";
 import { assertNever } from "../utils";
 import { defaultChartSettings } from "../settings-types";
@@ -33,7 +34,13 @@ function handleObjectMessages<K extends string, O extends object>(
     return false;
 }
 
-function startWorkerOrCreateFallback(isWorker: boolean) {
+export interface CanvasHandler {
+    handleMainToWorkerMessage(msg: MainToWorkerMessage): void;
+    startSendingFps(): void;
+    stopSendingFps(): void;
+}
+
+export function createCanvasHandler(sendWorkerToMain: (msg: WorkerToMainMessage) => void): CanvasHandler {
     let drawContext: DrawContext | null = null;
 
     const chartInfo: ChartInfo = {
@@ -47,6 +54,7 @@ function startWorkerOrCreateFallback(isWorker: boolean) {
     let framesDrawn = 0;
     let lastDrawTime = 0;
     let drawPlanned = false;
+
     function planRedraw() {
         if (drawPlanned) return;
 
@@ -60,26 +68,23 @@ function startWorkerOrCreateFallback(isWorker: boolean) {
         });
     }
 
-    function resolveMessage(msg: MessageEvent<MainToWorkerMessage>) {
+    function handleMainToWorkerMessage(msg: MainToWorkerMessage) {
         if (chartInfo.settings._verbose) {
             console.log(
                 "WORKER MSG",
-                msg.data.type,
-                msg.data.type.startsWith("change")
-                    ? Object.keys((msg.data as unknown as any).attrs ?? {})
-                    : msg.data.type === "setXBoundsAndRedraw"
-                    ? msg.data
+                msg.type,
+                msg.type.startsWith("change")
+                    ? Object.keys((msg as unknown as any).attrs ?? {})
+                    : msg.type === "setXBoundsAndRedraw"
+                    ? msg
                     : undefined,
             );
         }
-        switch (msg.data.type) {
+        switch (msg.type) {
             case "setCanvas": {
-                const { canvas, devicePixelRatio } = msg.data;
+                const { canvas, devicePixelRatio } = msg;
                 if (canvas) {
-                    const ctx = canvas.getContext("2d", { desynchronized: true }) as
-                        | CanvasRenderingContext2D
-                        | OffscreenCanvasRenderingContext2D
-                        | null;
+                    const ctx = canvas.getContext("2d", { desynchronized: true });
                     if (ctx) {
                         drawContext = {
                             canvas,
@@ -91,7 +96,7 @@ function startWorkerOrCreateFallback(isWorker: boolean) {
                     }
                 }
                 if (drawContext) {
-                    drawContext.devicePixelRatio = msg.data.devicePixelRatio;
+                    drawContext.devicePixelRatio = msg.devicePixelRatio;
                 }
                 planRedraw();
                 return;
@@ -99,86 +104,78 @@ function startWorkerOrCreateFallback(isWorker: boolean) {
 
             case "setCanvasSize": {
                 if (drawContext) {
-                    drawContext.canvas.width = msg.data.width;
-                    drawContext.canvas.height = msg.data.height;
+                    drawContext.canvas.width = msg.width;
+                    drawContext.canvas.height = msg.height;
                     planRedraw();
                 }
                 return;
             }
 
             case "setXBoundsAndRedraw": {
-                chartInfo.xBounds = msg.data.xBounds;
+                chartInfo.xBounds = msg.xBounds;
                 planRedraw();
                 return;
             }
 
             case "setChartSettings": {
-                chartInfo.settings = msg.data.chartSettings;
+                chartInfo.settings = msg.chartSettings;
                 return;
             }
         }
 
-        if (isEditObjectMessage("Line", msg.data)) {
-            if (handleObjectMessages("Line", msg.data, chartInfo.lines)) {
+        if (isEditObjectMessage("Line", msg)) {
+            if (handleObjectMessages("Line", msg, chartInfo.lines)) {
                 planRedraw();
             }
             return;
         }
-        if (isEditObjectMessage("VerticalFilling", msg.data)) {
-            if (handleObjectMessages("VerticalFilling", msg.data, chartInfo.verticalFillings)) {
+        if (isEditObjectMessage("VerticalFilling", msg)) {
+            if (handleObjectMessages("VerticalFilling", msg, chartInfo.verticalFillings)) {
                 planRedraw();
             }
             return;
         }
-        if (isEditObjectMessage("BottomStatus", msg.data)) {
-            if (handleObjectMessages("BottomStatus", msg.data, chartInfo.bottomStatuses)) {
+        if (isEditObjectMessage("BottomStatus", msg)) {
+            if (handleObjectMessages("BottomStatus", msg, chartInfo.bottomStatuses)) {
                 planRedraw();
             }
             return;
         }
 
-        assertNever(msg.data);
+        assertNever(msg);
     }
 
-    if (!isWorker) {
-        return {
-            postMessage(data) {
-                setTimeout(() => {
-                    resolveMessage({ data: data, type: data.type } as MessageEvent);
-                }, 0);
-            },
-            onmessage: null,
-            terminate() {},
-            addEventListener<K extends keyof WorkerEventMap>(
-                type: K,
-                listener: (this: Worker, ev: WorkerEventMap[K]) => any,
-                options?: boolean | AddEventListenerOptions,
-            ) {},
-            removeEventListener<K extends keyof WorkerEventMap>(
-                type: K,
-                listener: (this: Worker, ev: WorkerEventMap[K]) => any,
-                options?: boolean | EventListenerOptions,
-            ) {},
-        } as Worker;
-    }
-
-    setInterval(() => {
+    function sendFps() {
         const now = new Date().getTime();
         const fps = (framesDrawn / (now - lastDrawTime)) * 1e3;
         lastDrawTime = now;
         framesDrawn = 0;
-        postMessage(statsReportMessage(fps));
-    }, 1e3);
+        sendWorkerToMain(statsReportMessage(fps));
+    }
 
-    addEventListener("message", resolveMessage);
+    let fpsTimer: ReturnType<typeof setInterval> | null = null;
+    function startSendingFps() {
+        fpsTimer = setInterval(() => {
+            sendFps();
+        }, 1e3);
+    }
+    function stopSendingFps() {
+        if (fpsTimer) {
+            clearInterval(fpsTimer);
+            fpsTimer = null;
+        }
+    }
 
-    return;
+    return {
+        handleMainToWorkerMessage,
+        startSendingFps,
+        stopSendingFps,
+    };
 }
 
-export function startWorker(): undefined {
-    return startWorkerOrCreateFallback(true) as undefined;
-}
-
-export function createFallback(): Worker {
-    return startWorkerOrCreateFallback(false) as Worker;
+export function startWorker(): void {
+    // This functions should be call from inside the Web Worker
+    const handler = createCanvasHandler((msg) => global.postMessage(msg));
+    handler.startSendingFps();
+    addEventListener("message", (event) => handler.handleMainToWorkerMessage(event.data));
 }
