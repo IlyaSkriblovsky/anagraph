@@ -1,6 +1,5 @@
 import { DrawContext, FillArea } from "../worker-types";
 import { Bounds, Rect } from "../../basic-types";
-import { visualDownsample } from "../../downsample";
 import { transformDataToDrawAreaCoord } from "./draw-utils";
 
 export function drawFillArea(drawContext: DrawContext, fillAreaAttrs: FillArea, xBounds: Bounds, drawArea: Rect) {
@@ -8,16 +7,13 @@ export function drawFillArea(drawContext: DrawContext, fillAreaAttrs: FillArea, 
 
     const { ctx, devicePixelRatio } = drawContext;
 
-    const pointsX = points.map(([x]) => x);
+    const downX: number[] = [];
+    const downY: number[] = [];
 
-    const minVisibleX = Math.min(...pointsX);
-    const maxVisibleX = Math.max(...pointsX);
-
-    const areaWidth = maxVisibleX - minVisibleX;
-
-    const xBoundsWithDoubleAreaWidth: readonly [number, number] = [xBounds[0] - areaWidth, xBounds[1] + areaWidth];
-
-    const [downX, downY] = visualDownsample(points, xBoundsWithDoubleAreaWidth, drawArea.width);
+    for (let i = 0; i < points.length; i++) {
+        downX.push(points[i][0]);
+        downY.push(points[i][1]);
+    }
 
     if (downX.length === 0) return;
 

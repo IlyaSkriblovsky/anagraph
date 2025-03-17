@@ -8,3 +8,4 @@ export { BoundsManager } from "./BoundsManager";
 export { VerticalFilling } from "./VerticalFilling";
 export { BottomStatus } from "./BottomStatus";
 export type { ChartSettings } from "./settings-types";
+export { FillArea } from "./FillArea";
