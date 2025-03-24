@@ -27,7 +27,7 @@ import { DeepPartial, noop } from "ts-essentials";
 import deepmerge from "deepmerge";
 import { Bounds, divSize, Size } from "./basic-types";
 import { ChartSettings, defaultChartSettings } from "./settings-types";
-import { BottomStatus, Id, LineInfo, VerticalFilling } from "./worker/worker-types";
+import { BottomStatus, FillArea, Id, LineInfo, VerticalFilling } from "./worker/worker-types";
 import { calcManipulationAreaLpx } from "./layout-utils";
 
 interface ChartContextType {
@@ -42,6 +42,10 @@ interface ChartContextType {
     addBottomStatus(id: Id, bottomStatus: BottomStatus): void;
     changeBottomStatus(id: Id, bottomStatus: Partial<BottomStatus>): void;
     removeBottomStatus(id: Id): void;
+
+    addFillArea(id: Id, fillArea: FillArea): void;
+    changeFillArea(id: Id, fillArea: Partial<FillArea>): void;
+    removeFillArea(id: Id): void;
 }
 
 export const ChartContext = createContext<ChartContextType>({
@@ -56,6 +60,10 @@ export const ChartContext = createContext<ChartContextType>({
     addBottomStatus: noop,
     changeBottomStatus: noop,
     removeBottomStatus: noop,
+
+    addFillArea: noop,
+    changeFillArea: noop,
+    removeFillArea: noop,
 });
 
 export function useChartContext(): ChartContextType {
@@ -200,6 +208,11 @@ export const Chart = forwardRef<ChartRef, ChartProps>((props, ref) => {
             changeBottomStatus: (id, bottomStatus) =>
                 sendMessage({ type: "changeBottomStatus", id, attrs: bottomStatus }),
             removeBottomStatus: (id) => sendMessage({ type: "removeBottomStatus", id }),
+
+            addFillArea: (id: Id, fillArea: FillArea) => sendMessage({ type: "addFillArea", id, attrs: fillArea }),
+            changeFillArea: (id: Id, fillArea: Partial<FillArea>) =>
+                sendMessage({ type: "changeFillArea", id, attrs: fillArea }),
+            removeFillArea: (id: Id) => sendMessage({ type: "removeFillArea", id }),
         }),
         [worker],
     );

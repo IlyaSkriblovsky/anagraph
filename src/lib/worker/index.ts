@@ -9,7 +9,7 @@ import {
 } from "./messages";
 import { assertNever } from "../utils";
 import { defaultChartSettings } from "../settings-types";
-import { BottomStatus, ChartInfo, DrawContext, Id, LineInfo, VerticalFilling } from "./worker-types";
+import { BottomStatus, ChartInfo, DrawContext, FillArea, Id, LineInfo, VerticalFilling } from "./worker-types";
 import { drawChart } from "./drawers/drawChart";
 
 function handleObjectMessages<K extends string, O extends object>(
@@ -42,6 +42,7 @@ function startWorkerOrCreateFallback(isWorker: boolean) {
         lines: new Map<Id, LineInfo>(),
         verticalFillings: new Map<Id, VerticalFilling>(),
         bottomStatuses: new Map<Id, BottomStatus>(),
+        fillAreas: new Map<Id, FillArea>(),
     };
 
     let framesDrawn = 0;
@@ -132,6 +133,18 @@ function startWorkerOrCreateFallback(isWorker: boolean) {
         }
         if (isEditObjectMessage("BottomStatus", msg.data)) {
             if (handleObjectMessages("BottomStatus", msg.data, chartInfo.bottomStatuses)) {
+                planRedraw();
+            }
+            return;
+        }
+        if (isEditObjectMessage("FillArea", msg.data)) {
+            if (handleObjectMessages("FillArea", msg.data, chartInfo.fillAreas)) {
+                planRedraw();
+            }
+            return;
+        }
+        if (isEditObjectMessage("FillArea", msg.data)) {
+            if (handleObjectMessages("FillArea", msg.data, chartInfo.fillAreas)) {
                 planRedraw();
             }
             return;

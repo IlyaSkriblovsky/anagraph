@@ -28,10 +28,19 @@ export interface BottomStatus {
     color: string;
 }
 
+export interface FillArea {
+    points: LineData;
+    fillColor: string;
+    yBounds: Bounds;
+    borderWidth?: number;
+    borderColor?: string;
+}
+
 export interface ChartInfo {
     settings: ChartSettings;
     xBounds: Bounds;
     lines: Map<Id, LineInfo>;
     verticalFillings: Map<Id, VerticalFilling>;
     bottomStatuses: Map<Id, BottomStatus>;
+    fillAreas: Map<Id, FillArea>;
 }

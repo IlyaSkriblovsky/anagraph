@@ -1,6 +1,6 @@
 import { Bounds } from "../basic-types";
 import { ChartSettings } from "../settings-types";
-import { BottomStatus, Id, LineInfo, VerticalFilling } from "./worker-types";
+import { BottomStatus, FillArea, Id, LineInfo, VerticalFilling } from "./worker-types";
 
 export type MainToWorkerMessage =
     | SetCanvasMessage
@@ -9,7 +9,8 @@ export type MainToWorkerMessage =
     | SetChartSettingsMessage
     | EditObjectMessages<"Line", LineInfo>
     | EditObjectMessages<"VerticalFilling", VerticalFilling>
-    | EditObjectMessages<"BottomStatus", BottomStatus>;
+    | EditObjectMessages<"BottomStatus", BottomStatus>
+    | EditObjectMessages<"FillArea", FillArea>;
 
 export type WorkerToMainMessage = StatsReportMessage;
 
@@ -114,6 +115,10 @@ export function isEditObjectMessage(
     baseType: "BottomStatus",
     msg: MainToWorkerMessage,
 ): msg is EditObjectMessages<"BottomStatus", VerticalFilling>;
+export function isEditObjectMessage(
+    baseType: "FillArea",
+    msg: MainToWorkerMessage,
+): msg is EditObjectMessages<"FillArea", FillArea>;
 export function isEditObjectMessage<K extends string, O extends object>(
     baseType: K,
     msg: MainToWorkerMessage,
