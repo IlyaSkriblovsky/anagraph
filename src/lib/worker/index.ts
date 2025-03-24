@@ -142,14 +142,8 @@ export function createCanvasHandler(sendWorkerToMain: (msg: WorkerToMainMessage)
             }
             return;
         }
-        if (isEditObjectMessage("FillArea", msg.data)) {
-            if (handleObjectMessages("FillArea", msg.data, chartInfo.fillAreas)) {
-                planRedraw();
-            }
-            return;
-        }
-        if (isEditObjectMessage("FillArea", msg.data)) {
-            if (handleObjectMessages("FillArea", msg.data, chartInfo.fillAreas)) {
+        if (isEditObjectMessage("FillArea", msg)) {
+            if (handleObjectMessages("FillArea", msg, chartInfo.fillAreas)) {
                 planRedraw();
             }
             return;
