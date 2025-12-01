@@ -4,8 +4,9 @@ export function yLabel(value: number | null | undefined, precision: number | nul
     }
 
     const str = precision != null ? value.toFixed(precision) : value.toString();
+    const cleaned = str.replace(/([,.]\d*?)0+$/, "$1").replace(/\.$/, "");
 
-    return str.replace(/([,.]\d*?)0+$/, "$1").replace(/\.$/, "");
+    return parseFloat(cleaned).toString();
 }
 
 export function timeXLabel(x: number, prevX: number | null): string[] {
