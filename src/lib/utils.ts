@@ -39,13 +39,15 @@ export function* generateTicks(
     }
     const xStep = Math.pow(10, xStepLog);
 
-    const epsilonMin = range[0] > 0 ? 1 / 1.0001 : 1.0001;
-    const epsilonMax = range[1] > 0 ? 1.0001 : 1 / 1.0001;
+    const epsilonMin = range[0] > 0 ? 1 / 1.0000000001 : 1.0000000001;
+    const epsilonMax = range[1] > 0 ? 1.0000000001 : 1 / 1.0000000001;
 
     const xMin = Math.ceil((range[0] * epsilonMin) / xStep) * xStep * epsilonMin;
     const xMax = Math.floor((range[1] * epsilonMax) / xStep) * xStep * epsilonMax;
+    
+    const unitsPerPixel = xRange / pixels;
 
-    if (minLineHeight && xMin - range[0] > minLineHeight) {
+    if (minLineHeight && (xMin - range[0]) / unitsPerPixel > minLineHeight) {
         yield range[0];
     }
 
@@ -53,7 +55,7 @@ export function* generateTicks(
         yield x;
     }
 
-    if (minLineHeight && range[1] - xMax > minLineHeight) {
+    if (minLineHeight && (range[1] - xMax) / unitsPerPixel > minLineHeight) {
         yield range[1];
     }
 }
