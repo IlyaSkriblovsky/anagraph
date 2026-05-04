@@ -44,7 +44,14 @@ export function drawChart(drawContext: DrawContext, chartInfo: ChartInfo) {
         drawTimeXGrid(drawContext, settings.grid.lines, settings.legend.labels, xBounds, xGridArea);
     }
     if (settings.grid.y.draw) {
-        drawYGrid(drawContext, settings.legend.y.minHeight, settings.grid.lines, settings.grid.y.bounds, yGridArea);
+        drawYGrid(
+            drawContext,
+            settings.legend.y.minHeight,
+            settings.legend.y.edgeMinHeight,
+            settings.grid.lines,
+            settings.grid.y.bounds,
+            yGridArea,
+        );
     }
 
     if (settings.grid.outline.draw) {

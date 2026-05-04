@@ -21,7 +21,7 @@ export function drawYLegend(drawContext: DrawContext, legendSettings: LegendSett
         yBounds,
         drawArea.height,
         legendSettings.y.minHeight,
-        legendSettings.labels.fontSize,
+        legendSettings.y.edgeMinHeight,
     )) {
         const ypx = Math.round(scale(y, yBounds, [drawArea.y + drawArea.height, drawArea.y]));
         ctx.beginPath();

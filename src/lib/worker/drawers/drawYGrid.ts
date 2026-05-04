@@ -6,6 +6,7 @@ import { generateTicks, scale } from "../../utils";
 export function drawYGrid(
     drawContext: DrawContext,
     minYLegendHeight: number,
+    minYEdgeHeight: number,
     lineSettings: GridLineSettings,
     yBounds: Bounds,
     drawArea: Rect,
@@ -18,7 +19,7 @@ export function drawYGrid(
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
 
-    for (const y of generateTicks(yBounds, drawArea.height, minYLegendHeight)) {
+    for (const y of generateTicks(yBounds, drawArea.height, minYLegendHeight, minYEdgeHeight)) {
         const ypx = Math.round(scale(y, yBounds, [drawArea.y + drawArea.height, drawArea.y])) + 0.5;
         ctx.beginPath();
         ctx.moveTo(drawArea.x, ypx);

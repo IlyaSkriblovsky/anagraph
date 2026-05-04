@@ -27,7 +27,8 @@ export interface LegendSettings {
         draw: boolean;
         width: number;
         gap: number;
-        minHeight: 48;
+        minHeight: number;
+        edgeMinHeight: number;
     };
 }
 
@@ -71,6 +72,7 @@ export const defaultChartSettings: ChartSettings = {
             width: 60,
             gap: 8,
             minHeight: 48,
+            edgeMinHeight: 24,
         },
 
         bulletRadius: 2,
